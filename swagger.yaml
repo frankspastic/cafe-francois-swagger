@@ -13,13 +13,8 @@ basePath: /
 tags:
   - name: order
     description: CRUD Orders
-  - name: store
-    description: Access to Petstore orders
-  - name: user
-    description: Operations about user
-    externalDocs:
-      description: Find out more about our store
-      url: 'http://swagger.io'
+  - name: item
+    description: Access to Items
 schemes:
   - http
 paths:
@@ -86,7 +81,7 @@ paths:
           items:
             type: string
             enum:
-              - placed
+              - queued
               - served
               - cancelled
             default: available
@@ -147,7 +142,7 @@ paths:
           format: int64
           in: formData
           description: ID of item being ordered.
-        - name: name
+        - name: customerName
           in: formData
           description: Updated name of the customer
           required: false
@@ -185,302 +180,126 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Order not found
-  /store/inventory:
-    get:
-      tags:
-        - store
-      summary: Returns orders by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      produces:
-        - application/json
-      parameters: []
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-      security:
-        - api_key: []
-  /store/order:
+  /item:
     post:
       tags:
-        - store
-      summary: Place an order for a pet
+        - item
+      summary: Create an item
       description: ''
-      operationId: placeOrder
+      operationId: createItem
+      consumes:
+        - application/json
       produces:
-        - application/xml
         - application/json
       parameters:
         - in: body
           name: body
-          description: order placed for purchasing the pet
+          description: Item object that needs to be added to the list
           required: true
           schema:
-            $ref: '#/definitions/Order'
+            $ref: '#/definitions/Item'
       responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/Order'
-        '400':
-          description: Invalid Order
-  '/store/order/{orderId}':
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: >-
-        For valid response try integer IDs with value >= 1 and <= 10.        
-        Other values will generated exceptions
-      operationId: getOrderById
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of pet that needs to be fetched
-          required: true
-          type: integer
-          maximum: 10
-          minimum: 1
-          format: int64
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/Order'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: >-
-        For valid response try integer IDs with positive integer value.        
-        Negative or non-integer values will generate API errors
-      operationId: deleteOrder
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          type: integer
-          minimum: 1
-          format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-  /user:
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: Created user object
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-      responses:
-        default:
-          description: successful operation
-  /user/createWithArray:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithArrayInput
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: List of user object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: successful operation
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithListInput
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: List of user object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: successful operation
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: true
-          type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          type: string
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: string
-          headers:
-            X-Rate-Limit:
-              type: integer
-              format: int32
-              description: calls per hour allowed by the user
-            X-Expires-After:
-              type: string
-              format: date-time
-              description: date in UTC when token expires
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      produces:
-        - application/xml
-        - application/json
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  '/user/{username}':
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          type: string
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+        '405':
+          description: Invalid input
     put:
       tags:
-        - user
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+        - item
+      summary: Update an existing item
+      description: ''
+      operationId: updateItem
+      consumes:
+        - application/json
       produces:
-        - application/xml
         - application/json
       parameters:
-        - name: username
-          in: path
-          description: name that need to be updated
-          required: true
-          type: string
         - in: body
           name: body
-          description: Updated user object
+          description: Item object that needs to be added to the list
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: '#/definitions/Item'
       responses:
         '400':
-          description: Invalid user supplied
+          description: Invalid ID supplied
         '404':
-          description: User not found
-    delete:
+          description: Item not found
+        '405':
+          description: Validation exception  
+  '/item/{itemId}':
+    get:
       tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
+        - item
+      summary: Find item by ID
+      description: Returns a single item
+      operationId: getItemById
       produces:
-        - application/xml
         - application/json
       parameters:
-        - name: username
+        - name: itemId
           in: path
-          description: The name that needs to be deleted
+          description: ID of item to return
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Item'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Item not found
+    put:
+      tags:
+        - item
+      summary: Updates an item in the store with form data
+      description: ''
+      operationId: updateItemWithForm
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: itemId
+          in: path
+          description: ID of item that needs to be updated
+          required: true
+          type: integer
+          format: int64
+        - name: name
+          in: formData
+          description: Updated name of the customer
           required: true
           type: string
+        - name: description
+          in: formData
+          description: Updated description of the customer
+          required: false
+          type: string
+      responses:
+        '405':
+          description: Invalid input
+    delete:
+      tags:
+        - item
+      summary: Deletes an Item
+      description: ''
+      operationId: deleteItem
+      produces:
+        - application/json
+      parameters:
+        - name: itemId
+          in: path
+          description: Item id to delete
+          required: true
+          type: integer
+          format: int64
       responses:
         '400':
-          description: Invalid username supplied
+          description: Invalid ID supplied
         '404':
-          description: User not found
-securityDefinitions:
-  petstore_auth:
-    type: oauth2
-    authorizationUrl: 'http://petstore.swagger.io/oauth/dialog'
-    flow: implicit
-    scopes:
-      'write:pets': modify pets in your account
-      'read:pets': read your pets
-  api_key:
-    type: apiKey
-    name: api_key
-    in: header
+          description: Item not found
 definitions:
   Order:
     type: object
@@ -488,10 +307,13 @@ definitions:
       id:
         type: integer
         format: int64
-      itemId:
-        type: integer
+      items:
+        type: array
         format: int64
-      name:
+        items : {
+          $ref : '#/definitions/OrderItem'
+        }
+      customerName:
         type: string
       quantity:
         type: integer
@@ -503,7 +325,7 @@ definitions:
         type: string
         description: Order Status
         enum:
-          - placed
+          - queued
           - served
           - cancelled
       complete:
@@ -511,6 +333,17 @@ definitions:
         default: false
     xml:
       name: Order
+  OrderItem:
+    type: object
+    properties:
+      orderId:
+        type: integer
+        format: int64
+      itemId:
+        type: integer
+        format: int64
+    xml:
+      name: OrderItem
   Item:
     type: object
     properties:
@@ -518,6 +351,8 @@ definitions:
         type: integer
         format: int64
       name:
+        type: string
+      description:
         type: string
     xml:
       name: Item
